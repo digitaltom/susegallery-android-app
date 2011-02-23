@@ -20,15 +20,16 @@ import android.app.*;
 import android.os.*;
 import android.view.*;
 import android.webkit.*;
+import android.widget.*;
 
 /**
  * A basic class that only loads an url
  */
 public class Gallery extends Activity {
-    
+
     final String TARGET_URL = "http://susegallery.com";
     WebView mWebView;
-    
+
     public Gallery() {
     }
 
@@ -40,7 +41,29 @@ public class Gallery extends Activity {
         setContentView(R.layout.main);
         mWebView = (WebView) findViewById(R.id.webview);
         mWebView.getSettings().setJavaScriptEnabled(true);
+
+        final Activity activity = this;
+        mWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                Toast.makeText(activity, "Oh no! " + description, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        String summary = "<html><body>loading...</body></html>";
+        mWebView.loadData(summary, "text/html", "utf-8");
+
         mWebView.loadUrl(TARGET_URL);
+        mWebView.setWebViewClient(new MyWebViewClient());
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK) && mWebView.canGoBack()) {
+            mWebView.goBack();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     /**
@@ -75,6 +98,14 @@ public class Gallery extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         return super.onOptionsItemSelected(item);
+    }
+
+    private class MyWebViewClient extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            view.loadUrl(url);
+            return true;
+        }
     }
 
 }
